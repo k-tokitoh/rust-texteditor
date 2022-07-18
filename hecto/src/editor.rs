@@ -1,28 +1,33 @@
 use std::io::{self, stdout};
 use termion::{event::Key, input::TermRead, raw::IntoRawMode};
 
-pub struct Editor {}
+pub struct Editor {
+    should_quit: bool,
+}
 
 impl Editor {
     pub fn default() -> Self {
-        Self {}
+        Self { should_quit: false }
     }
 
-    pub fn run(&self) {
+    pub fn run(&mut self) {
         let _stdout = stdout().into_raw_mode().unwrap();
 
         loop {
             if let Err(err) = self.process_keypress() {
                 die(&err);
             }
+            if self.should_quit {
+                break;
+            }
         }
     }
 
     // 入力に応じた処理を行う
-    fn process_keypress(&self) -> Result<(), io::Error> {
+    fn process_keypress(&mut self) -> Result<(), io::Error> {
         let pressed_key = read_key()?;
         match pressed_key {
-            Key::Ctrl('q') => panic!("Program end"),
+            Key::Ctrl('q') => Ok(self.should_quit = true),
             // TODO
             _ => Ok(()),
         }
